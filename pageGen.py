@@ -59,7 +59,7 @@ def get_service(teamNum,service):
 	try:
 		conn = mdb.connect(host='localhost',user='whiteTeam',passwd='CCDC623',db='CCDC')
 		cur = conn.cursor()
-		query = "SELECT status FROM " + service + " WHERE team_id = '" + teamNum + "' ORDER BY " + service + " DESC;"
+		query = "SELECT status FROM " + service + " WHERE team_id = '" + str(teamNum) + "' ORDER BY " + service + " DESC;"
 		print query
 		cur.execute(query)
 		results = cur.fetchmany(3)
@@ -71,13 +71,16 @@ def get_service(teamNum,service):
 				status_list.append('Down')
 		status_string = ''
 		if len(status_list) < 3:
-			status_string = 'Up Up Up'
+			status_string = '---'
 		else:
 			for i in status_list:
 				status_string+=i + ' '
+				print i
+		cur.close()
 		conn.close()
 	except:
-		print("Could not connect to the database")
+		print("Service Could not connect to the database")
+		status_string = '---'
 	return status_string
 
 #this takes a team number then makes a bunch of sql queries
@@ -112,6 +115,8 @@ def getSSH(teamNum):
 
 def getMail(teamNum):
 	try:
+		print "Trying mail"
+		print teamNum
 		status = get_service(teamNum,'mail')
 	except:
 		print("Could not connect to the database")	
@@ -158,4 +163,3 @@ if __name__=='__main__':
 	#initDB()
 
 	pageGen()
-	#get_service('1','mail')

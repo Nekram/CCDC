@@ -11,6 +11,7 @@ import sys
 import socket
 import MySQLdb
 import time
+import paramiko
 from scapy.all import *
 
 class Team:
@@ -18,7 +19,32 @@ class Team:
 	#our base constructor sets our score to 0
 	def __init__(self,num):
 		self.score=0
-		self.teamNum=str(num)
+		self.teamNum=str(num+1)
+
+	#Get password based on the service
+	def get_password(self, service):
+		print self.teamNum
+		conn = MySQLdb.connect('localhost','whiteTeam','CCDC623','CCDC')
+		with conn:
+			curr = conn.cursor()
+			query = "SELECT password FROM passwords WHERE service = '" + service + "' AND team_id = '" + self.teamNum + "'"
+			print query
+			curr.execute(query)
+			password_result = curr.fetchone()
+			if password_result is not None:
+				password = password_result[0]
+				return password
+			else:
+				password = 'wrongpassword'
+				return password
+	
+	def add_score(self,service,status):
+		conn = MySQLdb.connect('localhost','whiteTeam','CCDC623','CCDC')
+		with conn:
+			cur = conn.cursor()
+			query = "INSERT INTO " + service + " VALUES('','NULL','" + self.teamNum + "','" + status + "')"
+			cur.execute(query)
+		conn.close()
 
 	def send_email(self,from_address,to_address):
 		header = "From: " + from_address + "\r\nTo: " + to_address + "\r\n\r\n"
@@ -37,24 +63,37 @@ class Team:
 		for i in row_list:
 			print i
 
-	def add_score(self,column,team):
-		db = MySQLdb.connect(host='localhost',user='kevin',passwd='kevinpass',db='testdb')
-		cur_cursor = db.cursor()
-		query = """UPDATE team_score SET """
-		query = query + column + " =" + column + " +1 WHERE id=" + team
-		cur_cursor.execute(query)
-
-	def connect_smpt_server(self,host,port,user,password):
-		server = smtplib.SMTP('smtp.gmail.com',587)
+	def connect_smtp_server(self,host,port,user):
+		try:
+			server = smtplib.SMTP(host,port)
+		except:
+			print "Could not connect"
+			self.add_score('mail','0')
+			return
 		server.ehlo()
 		server.starttls()
 		server.ehlo()
 		try:
+			password = self.get_password('mail')
+			print 'mail ' + password
 			login_value = server.login(user,password)
+			self.add_score('mail','1')
 			print login_value
 		except smtplib.SMTPAuthenticationError:
-			print "Argh"
+			self.add_score('mail','0')
+			print "Could not authneticate for " + self.teamNum
 		server.close()
+
+	#this uses paramiko to check the ssh connection
+	def check_ssh(self,host,user):
+		password = self.get_password('ssh')
+		ssh = paramiko.SSHClient()
+		try:
+			ssh.connect(host,user,password)
+			self.add_score('ssh','1')
+		except:
+			print "SSH Failed"
+			self.add_score('ssh','0')
 
 	def find_dhcp_servers(self):
 		conf.checkIPaddr = False
@@ -94,8 +133,9 @@ class Team:
 		hostname="www.ccdc" + self.teamNum+".lab"
 		try:
 			socket.gethostbyname(hostName)
-			self.score+=1
+			self.add_score('dns','1')
 		except:	
+			self.add_score('dns','0')
 			return
 
 
@@ -108,7 +148,9 @@ if __name__=='__main__':
 	while True:
 		for i in range(5):
 			#do stuff
-			teams[i].check_dns()
+			teams[i].check_ssh('localhost','kevin')
+			#teams[i].check_dns()
+			teams[i].connect_smtp_server('localhost',999,'kevin')
 			#do other
 		time.sleep(300)			#wait 5 minutes	
 
