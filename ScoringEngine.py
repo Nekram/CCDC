@@ -89,7 +89,12 @@ if __name__=='__main__':
 	for i in range(0,5):
 		teams.append(Team(i))
 	
-	
+	while True:
+		for i in range(5):
+			#do stuff
+			teams[i].check_dns()
+			#do other
+		time.sleep(300)			#wait 5 minutes	
 
 #check_mysql('kevin','kevinpass','localhost','testdb')
 #add_score('dhcp','1')
