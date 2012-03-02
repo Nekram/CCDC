@@ -49,45 +49,73 @@ def initDB():
 		cur.execute("CREATE TABLE IF NOT EXISTS\
 			dns(dns INT PRIMARY KEY AUTO_INCREMENT, password VARCHAR(255), team_id INT, status TINYINT(1))")
 
-		for i in range(1,6):
-		
+		#for i in range(1,6):
+		#create a table for service passwords
+		cur.execute("CREATE TABLE IF NOT EXISTS\
+			passwords(password_id INT PRIMARY KEY AUTO_INCREMENT, password VARCHAR(255), team_id INT, service VARCHAR(255))")
+
+#This grabs the last three results for a service, and returns them
+def get_service(teamNum,service):
+	try:
+		conn = mdb.connect(host='localhost',user='whiteTeam',passwd='CCDC623',db='CCDC')
+		cur = conn.cursor()
+		query = "SELECT status FROM " + service + " WHERE team_id = '" + teamNum + "' ORDER BY " + service + " DESC;"
+		print query
+		cur.execute(query)
+		results = cur.fetchmany(3)
+		status_list = []
+		for i in results:
+			if i[0] > 0:
+				status_list.append('Up')
+			else:
+				status_list.append('Down')
+		status_string = ''
+		if len(status_list) < 3:
+			status_string = 'Up Up Up'
+		else:
+			for i in status_list:
+				status_string+=i + ' '
+		conn.close()
+	except:
+		print("Could not connect to the database")
+	return status_string
 
 #this takes a team number then makes a bunch of sql queries
 #then returns a string giving us the services for the team
 def getWeb(teamNum):
 	try:
-		conn = mdb.connect('localhost','whiteTeam','CCDC623','CCDC')
+		status = get_service(teamNum,'webIn')
 	except:
 		print("could not connect to the database")
-	return ""
+	return status
 
 def getWebOut(teamNum):
 	try:
-		conn = mdb.connect('localhost','whiteTeam','CCDC623','CCDC')
+		status = get_service(teamNum,webOut)
 	except:
 		print("could not connect to the database")
+	return status
 
 def getDNS(teamNum):
 	try:
-		conn = mdb.connect('localhost','whiteTeam','CCDC623','CCDC')
+		status = get_service(teamNum,'dns')
 	except:
 		print("could not connect to the database")
-
-	return ""
+	return status
 
 def getSSH(teamNum):
 	try:
-		conn = mdb.connect('localhost','whiteTeam','CCDC623','CCDC')
+		status = get_service(teamNum,'ssh')
 	except:
 		print("Could not connect to the database")
-	return ""
+	return status
 
 def getMail(teamNum):
 	try:
-		conn = mdb.connect('localhost','whiteTeam','CCDC623','CCDC')
+		status = get_service(teamNum,'mail')
 	except:
 		print("Could not connect to the database")	
-	return ""
+	return status
 
 #the pageGen function
 #writes an to /var/www/index.html
@@ -127,6 +155,7 @@ if __name__=='__main__':
 		pass
 
 	#if arg is "init":
-	initDB()
+	#initDB()
 
-	#pageGen()
+	pageGen()
+	#get_service('1','mail')
