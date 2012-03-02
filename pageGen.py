@@ -2,10 +2,10 @@
 '''
 Page Generator for CCDC at large 2012
 (c) Kevin Galloway kpgalloway@gmail.com
-    Brandon Marken brandon.marken@gmail.com
+		Brandon Marken brandon.marken@gmail.com
 
 This software is licensed under the MIT license. 
-    
+		
 '''
 import re
 import os
@@ -15,14 +15,40 @@ import MySQLdb as mdb
 import time
 import datetime
 
+#
+#the initDB function
+#should only be called once and builds the initial database 
+#
+#
 def initDB():
 	conn=mdb.connect('localhost','whiteTeam','CCDC623','CCDC')
 	with conn:
-  	cur = conn.cursor()
-  	cur.execute("CREATE TABLE IF NOT EXISTS\
-    	  Teams(ID INT PRIMARY KEY AUTO_INCREMENT, Name VARCHAR(25))")
+		cur = conn.cursor()
+		cur.execute("CREATE TABLE IF NOT EXISTS\
+			Teams(ID INT PRIMARY KEY AUTO_INCREMENT, Name VARCHAR(25))")
 		for i in range(1,6):
-  		cur.execute("INSERT INTO Teams(Name) VALUES('Team"+str(i)+ "')")
+			cur.execute("INSERT INTO Teams(Name) VALUES('Team"+str(i)+ "')")
+
+		#create a table for SSH, which has an SSH ID (marks each entry as unique), password, team_id (matches a team ID), and status
+		#where values >0 are "on", and a value of 0 is "off"
+		cur.execute("CREATE TABLE IF NOT EXISTS\
+			ssh(ssh_id INT PRIMARY KEY AUTO_INCREMENT, password VARCHAR(255), team_id INT, status TINYINT(1))")
+
+		#create a taable for web going in	
+		cur.execute("CREATE TABLE IF NOT EXISTS\
+			webIn(webIn INT PRIMARY KEY AUTO_INCREMENT, password VARCHAR(255), team_id INT, status TINYINT(1))")
+		#create a table for web outgoing
+		cur.execute("CREATE TABLE IF NOT EXISTS\
+			webOut(webOut INT PRIMARY KEY AUTO_INCREMENT, password VARCHAR(255), team_id INT, status TINYINT(1))")
+
+		#create a table for mail
+		cur.execute("CREATE TABLE IF NOT EXISTS\
+			mail(mail INT PRIMARY KEY AUTO_INCREMENT, password VARCHAR(255), team_id INT, status TINYINT(1))")
+		
+		#create a table for dns
+		cur.execute("CREATE TABLE IF NOT EXISTS\
+			dns(dns INT PRIMARY KEY AUTO_INCREMENT, password VARCHAR(255), team_id INT, status TINYINT(1))")
+
 
 
 #this takes a team number then makes a bunch of sql queries
@@ -33,6 +59,12 @@ def getWeb(teamNum):
 	except:
 		print("could not connect to the database")
 	return ""
+
+def getWebOut(teamNum):
+	try:
+		conn = mdb.connect('localhost','whiteTeam','CCDC623','CCDC')
+	except:
+		print("could not connect to the database")
 
 def getDNS(teamNum):
 	try:
@@ -90,4 +122,4 @@ if __name__=='__main__':
 	if sys.argv[1] is "init":
 		initDB()
 
-		pageGen()
+	pageGen()
