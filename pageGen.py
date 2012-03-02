@@ -49,7 +49,8 @@ def initDB():
 		cur.execute("CREATE TABLE IF NOT EXISTS\
 			dns(dns INT PRIMARY KEY AUTO_INCREMENT, password VARCHAR(255), team_id INT, status TINYINT(1))")
 
-
+		for i in range(1,6):
+		
 
 #this takes a team number then makes a bunch of sql queries
 #then returns a string giving us the services for the team
@@ -119,7 +120,13 @@ def pageGen():
 
 if __name__=='__main__':
 
-	if sys.argv[1] is "init":
-		initDB()
+	arg=""
+	try:
+		arg=sys.argv[1]
+	except:
+		pass
 
-	pageGen()
+	#if arg is "init":
+	initDB()
+
+	#pageGen()
