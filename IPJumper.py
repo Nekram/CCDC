@@ -15,4 +15,6 @@ def changeIP():
 	os.system(comm)
 
 if __name__=='__main__':
-	main()
+	while True:
+		wait(random.randint(250,350))
+		changeIP()
