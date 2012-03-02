@@ -69,6 +69,22 @@ class Team:
 		for i in dhcp_ip:
 			print i
 
+
+	'''
+		This checks whether they can send web out from the work stations
+		writes to the relevant database
+	'''
+	def checkWebIn(self):
+		HOST = 'daring.cwi.nl'    # The remote host
+		PORT = 80              # The same port as used by the server
+		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		s.connect((HOST, PORT))
+		s.sendall('ping?')
+		data = s.recv(1024)
+		s.close()
+		#do stuff
+
+
 	'''
 		The check_dns function
 		takes no parameters and returns nothing
@@ -79,7 +95,7 @@ class Team:
 		try:
 			socket.gethostbyname(hostName)
 			self.score+=1
-		except:
+		except:	
 			return
 
 
